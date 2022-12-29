@@ -51,12 +51,13 @@ float Wheel::spin() {
 
     //调节速度 PID 通过PID工具 根据当前速度和目标速度  获取马达转动的pwm
     float pwm = pid.compute(this->targetSpeed, curSpeed);
-    if (this->is_left_wheel && targetSpeed != 0){
-        // mylog("[left] ExpSpeed:%d, CurSpeed:%d, pwm:%d \n", (int) (targetSpeed * 100), (int) (curSpeed * 100), (int) (pwm));
-    }else if(!this->is_left_wheel && targetSpeed != 0){
-        // mylog("[right] ExpSpeed:%d, CurSpeed:%d, pwm:%d \n", (int) (targetSpeed * 100), (int) (curSpeed * 100), (int) (pwm));
-    }
-    // mylog("kp:%d, ki:%d, kd:%d \n", (int) (pid.kp * 100), (int) (pid.ki * 100), (int) (pid.kd * 100));
+
+    // if (this->is_left_wheel && targetSpeed != 0){
+    //     // mylog("[left] ExpSpeed:%d, CurSpeed:%d, pwm:%d \n", (int) (targetSpeed * 100), (int) (curSpeed * 100), (int) (pwm));
+    // }else if(!this->is_left_wheel && targetSpeed != 0){
+    //     // mylog("[right] ExpSpeed:%d, CurSpeed:%d, pwm:%d \n", (int) (targetSpeed * 100), (int) (curSpeed * 100), (int) (pwm));
+    // }
+    // // mylog("kp:%d, ki:%d, kd:%d \n", (int) (pid.kp * 100), (int) (pid.ki * 100), (int) (pid.kd * 100));
 
     this->motor.spin((int) pwm);
     return curSpeed / MOVE_CTRL_RATE;

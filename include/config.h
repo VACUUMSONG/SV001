@@ -14,8 +14,8 @@
 
 
 //最大和最小PWM
-#define MAX_PWM         250
-#define MIN_PWM         -250
+// #define MAX_PWM         250
+// #define MIN_PWM         -250
 //最大和最小RPM
 #define MAX_RPM         250
 #define MIN_RPM         -250
@@ -23,15 +23,12 @@
 //编码器获取数据的频率
 #define MOVE_CTRL_RATE 100
 
-// 轮子转一圈的信号数 (13 * 30 * 4)
-#define WHEEL_TPR           (224)
+// 轮子转一圈的信号数 4096线 编码电机 
+#define WHEEL_TPR           (4096)
 
 // 轮子的直径
-#define WHEEL_DIAMETER      0.064f
+#define WHEEL_DIAMETER      0.138f
 // 左右轮子的距离
-#define WHEEL_DISTANCE      0.205f
-// 前后轮子的轴距
-#define WHEEL_AXIS          0.170f
-
+#define WHEEL_DISTANCE      0.384f
 
 #endif 

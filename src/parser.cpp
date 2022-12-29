@@ -1,5 +1,16 @@
 #include "parser.h"
 
+// CheckSum
+uint8_t checksum(uint8_t* buf, size_t len)
+{
+  uint8_t sum = 0x00;
+  for(int i=0;i<len;i++)
+  {
+    sum += *(buf + i);
+  }
+  return sum;
+}
+
 /**
  * parse vel command received
  **/

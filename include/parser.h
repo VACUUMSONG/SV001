@@ -1,5 +1,5 @@
-#ifndef _COMMANDPARSER
-#define _COMMANDPARSER
+#ifndef PARSER_H
+#define PARSER_H
 
 #include <Arduino.h>
 
@@ -33,6 +33,10 @@ typedef	struct{
 		float_union	pose_angular;//角度
 }send_data;
 
+
+// 和校验
+uint8_t checksum(uint8_t* buf, size_t len);
+
 /*
  * parser command from master computer
  */
@@ -44,4 +48,4 @@ void parse_pid(uint8_t* rcommand, float& kp, float& ki, float& kd);
 
 void set_publishmsg(uint8_t* smsg, send_data& send_data);
 
-#endif // _COMMANDPARSER
+#endif 

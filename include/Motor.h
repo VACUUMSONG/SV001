@@ -17,8 +17,7 @@ private:
     //方向校正系数 1: -1:
     int direction = 1;
 public:
-    Motor(uint8_t MotorPin1, uint8_t MotorPin2,
-             uint8_t MotorPWM, int direction);
+    Motor(int direction);
 
     ~Motor();
     //初始化方法

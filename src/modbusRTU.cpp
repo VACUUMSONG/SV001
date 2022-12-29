@@ -1,4 +1,5 @@
 #include "modbusRTU.h"
+#include "hex2dec.h"
 #include <string.h>
 
 // 中菱 电机驱动 Modbus协议
@@ -85,7 +86,7 @@ void ModbusRTU::spin(){
 	
 }
 
-uint8_t ModbusRTU::toBCD(int val) {  
+uint8_t ModbusRTU::toHex(int val) {  
 	// HardwareSerial Serial_BM1684(PIN_U1_RX, PIN_U1_TX);
 	// Serial_BM1684.begin(115200);
 
@@ -96,16 +97,37 @@ uint8_t ModbusRTU::toBCD(int val) {
 	return resHex;
 }
 
+// 命令发送
 void ModbusRTU::mb_Send_Cmd(uint8_t cmd[],uint8_t len)
 {
 	HardwareSerial Serial_Modbus(PIN_U5_RX, PIN_U5_TX);
 	Serial_Modbus.begin(115200);
-
+	
 	// 数据请求
 	for (int i = 0; i < len; i++) {
 		Serial_Modbus.write(cmd[i]); // write输出
 	}
 	delay(200); //等待读取完成
+}
+
+// 速度反馈
+void ModbusRTU::mb_Speed_callBack() {
+
+	HardwareSerial Serial_Modbus(PIN_U5_RX, PIN_U5_TX);
+	Serial_Modbus.begin(115200);
+
+	uint8_t mb_getSpeed_TwoMotor[8]={0x01, 0x03, 0x20, 0xAB, 0x00, 0x02, 0xBE, 0x2B};
+	// 数据请求
+	for (int i = 0; i < 8; i++) {
+		Serial_Modbus.write(mb_getSpeed_TwoMotor[i]); // write输出
+	}
+	delay(200); //等待读取完成
+
+	while (Serial_Modbus.available())	
+	{
+		Serial_Modbus.read();
+	}
+	
 }
 
 // 故障清除
@@ -159,8 +181,11 @@ void ModbusRTU::mb_Set_Motor_Speed() {
 // 转速设定 -> 左电机
 void ModbusRTU::mb_Set_Left_Moto(int rpm) {
 	
+	//串口初始化
 	HardwareSerial Serial_Modbus(PIN_U5_RX, PIN_U5_TX);
 	Serial_Modbus.begin(115200);
+	HardwareSerial Serial_BM1684(PIN_U1_RX, PIN_U1_TX);
+	Serial_BM1684.begin(115200);
 
 	// rpm 限幅
     if (rpm > MAX_RPM) {
@@ -169,41 +194,26 @@ void ModbusRTU::mb_Set_Left_Moto(int rpm) {
         rpm = MIN_RPM;
     }
 
-	// 写 左电机转速 0x88
 	uint8_t mb_setSpeed_cmd[8]={};
-	
-	if(rpm>0){
-		// 高八位 0x00
-		uint8_t mb_setSpeed_LM[5] = {0x01, 0x06, 0x20, 0x88, 0x00};
-		for(char i=0;i<5;i++){
-			mb_setSpeed_cmd[i]=mb_setSpeed_LM[i];
-		}
+	uint8_t mb_setSpeed_LM[4] = {0x01, 0x06, 0x20, 0x88};
 
-		int8_t rpmHex = toBCD(rpm);
-		mb_setSpeed_cmd[5]=rpmHex;
+	for(char i=0;i<4;i++){
+		mb_setSpeed_cmd[i]=mb_setSpeed_LM[i];
+	}
+
+	if(rpm>0){ //高八位 0x00
+		mb_setSpeed_cmd[4]=0x00;
+		mb_setSpeed_cmd[5]= toHex(rpm);
 	}else{
-		// 高八位 0xFF
-		uint8_t mb_setSpeed_LM[5] = {0x01, 0x06, 0x20, 0x88, 0xFF};
-		for(char i=0;i<5;i++){
-			mb_setSpeed_cmd[i]=mb_setSpeed_LM[i];
-		}
-		// 取补码
-		int8_t rpmHex = toBCD((255-rpm));
-		mb_setSpeed_cmd[5]=rpmHex;
-
+		mb_setSpeed_cmd[4]=0xFF;
+		mb_setSpeed_cmd[5]= toHex(255+rpm);
 	}
 
 	unsigned short myCRC = CRC16(mb_setSpeed_cmd,6);
-	mb_setSpeed_cmd[6]=(myCRC>>8)&0xFF;
-	mb_setSpeed_cmd[7]=myCRC&0xFF;
+	mb_setSpeed_cmd[6]=myCRC&0xFF;
+	mb_setSpeed_cmd[7]=(myCRC>>8)&0xFF;
 
-	// Serial_BM1684.print(mb_setSpeed_cmd);
-
-	// 数据请求
-	for (int i = 0; i < 8; i++) {
-		Serial_Modbus.write(mb_setSpeed_cmd[i]); // write输出
-	}
-	delay(200); //等待读取完成
+	mb_Send_Cmd(mb_setSpeed_cmd,8);	
 }
 
 // 转速设定 -> 右电机
@@ -214,23 +224,26 @@ void ModbusRTU::mb_Set_Right_Moto(int rpm) {
     } else if (rpm < MIN_RPM) {
         rpm = MIN_RPM;
     }
-	// 新数组
 	uint8_t mb_setSpeed_cmd[8]={};
+	uint8_t mb_setSpeed_RM[4] = {0x01, 0x06, 0x20, 0x89};
 
-	// 写 右电机转速
-	uint8_t mb_setSpeed_RM[5] = {0x01, 0x06, 0x20, 0x89, 0x00};
-	for(char i=0;i<5;i++){
+	for(char i=0;i<4;i++){
 		mb_setSpeed_cmd[i]=mb_setSpeed_RM[i];
 	}
 
-	int8_t rpmHex = toBCD(rpm);
-	mb_setSpeed_cmd[5]=rpmHex;
+	int8_t rpmHex={};
+	if(rpm>0){ //高八位 0x00
+		mb_setSpeed_cmd[4]= 0x00;
+		mb_setSpeed_cmd[5]= toHex(rpm);
+	}else{
+		mb_setSpeed_cmd[4]=0xFF;
+		mb_setSpeed_cmd[5]= toHex((255+rpm));
+	}
 
 	unsigned short myCRC = CRC16(mb_setSpeed_cmd,6);
-	mb_setSpeed_cmd[6]=(myCRC>>8)&0xFF;
-	mb_setSpeed_cmd[7]=myCRC&0xFF;
+	mb_setSpeed_cmd[6]=myCRC&0xFF;
+	mb_setSpeed_cmd[7]=(myCRC>>8)&0xFF;
 
-	mb_Set_Motor_Enable();
 	mb_Send_Cmd(mb_setSpeed_cmd,8);	
 }
 
@@ -245,33 +258,50 @@ int16_t ModbusRTU::mb_Get_LeftMotor_RPA() {
 	Serial_BM1684.begin(115200);
 	Serial_Modbus.begin(115200);
 
+	// 获取电机速度
+	uint8_t mb_getSpeed_TwoMotor[8]={0x01, 0x03, 0x20, 0xAB, 0x00, 0x02, 0xBE, 0x2B};
+	// 数据请求
+	for (int i = 0; i < 8; i++) {
+		Serial_Modbus.write(mb_getSpeed_TwoMotor[i]); // write输出
+	}
+	delay(200); //等待读取完成
+
+	// 数据接收及解析
 	String data="";
 	char mySpeedRpm[2]="";
 
-	// 获取电机速度
-	uint8_t mb_getSpeed_TwoMotor[8]={0x01, 0x03, 0x20, 0xAB, 0x00, 0x02, 0xBE, 0x2B};
-	for (int i = 0; i < 8; i++) {                   // 读取电机转速
-		Serial_Modbus.write(mb_getSpeed_TwoMotor[i]); // write输出
-	}
-	delay(200);
-
-	// 数据接收
 	while (Serial_Modbus.available())
-	{ // 从串口中读取数据
+	{ 
+		// 从串口中读取数据
 		data += (char)Serial_Modbus.read(); // read读取
 		Serial_Modbus.flush();
 	}
 
-	Serial_BM1684.println(data);
-	delay(200);
+	char lm_rpm_flag = data.charAt(3);
+	char lm_rpm_num  = data.charAt(4);
+
+	int resData= int(lm_rpm_flag)*256 +int(lm_rpm_num);
 	
-	data.toCharArray(mySpeedRpm,5,3);
-	Serial_BM1684.println(mySpeedRpm);
+	Serial_BM1684.print("-----LM-------");	
 	delay(200);
+	if(resData<2560){
+		Serial_BM1684.print(resData);	
+	}else{
+		Serial_BM1684.print(resData-65535);	
+	}
+	delay(200);
+	Serial_BM1684.print("-------------");	
+	delay(200);
+
 	data = "";
 
-	return 0;
+	if(resData < 2560){
+		return resData;
+	}else {
+		return (resData -65536);
+	}
 }
+
 
 int16_t ModbusRTU::mb_Get_RightMotor_RPA() {
 
@@ -280,30 +310,45 @@ int16_t ModbusRTU::mb_Get_RightMotor_RPA() {
 	Serial_BM1684.begin(115200);
 	Serial_Modbus.begin(115200);
 
+	// 获取电机速度
+	uint8_t mb_getSpeed_TwoMotor[8]={0x01, 0x03, 0x20, 0xAB, 0x00, 0x02, 0xBE, 0x2B};
+	// 数据请求
+	for (int i = 0; i < 8; i++) {
+		Serial_Modbus.write(mb_getSpeed_TwoMotor[i]); // write输出
+	}
+	delay(200); //等待读取完成
+
+	// 数据接收及解析
 	String data="";
 	char mySpeedRpm[2]="";
 
-	// 获取电机速度
-	uint8_t mb_getSpeed_TwoMotor[8]={0x01, 0x03, 0x20, 0xAB, 0x00, 0x02, 0xBE, 0x2B};
-	for (int i = 0; i < 8; i++) {                   // 读取电机转速
-		Serial_Modbus.write(mb_getSpeed_TwoMotor[i]); // write输出
-	}
-	delay(200);
-
-	// 数据接收
 	while (Serial_Modbus.available())
-	{ // 从串口中读取数据
+	{ 
+		// 从串口中读取数据
 		data += (char)Serial_Modbus.read(); // read读取
 		Serial_Modbus.flush();
 	}
+
+	char rm_rpm_flag = data.charAt(5);
+	char rm_rpm_num  = data.charAt(6);
+
+	int resData= int(rm_rpm_flag)*256 +int(rm_rpm_num);
 	
-	Serial_BM1684.print(data);
+	Serial_BM1684.print("-----RM-------");	
 	delay(200);
-
-	data.toCharArray(mySpeedRpm,3,2);
-
-	Serial_BM1684.println(mySpeedRpm);
+	if(resData<2560){
+		Serial_BM1684.print(resData);	
+	}else{
+		Serial_BM1684.print(resData-65535);	
+	}
+	delay(200);
+	Serial_BM1684.print("-------------");	
 	delay(200);
 	data = "";
-	return 0;
+
+	if(resData < 2560){
+		return resData;
+	}else{
+		return (resData -65536);
+	}
 }

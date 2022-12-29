@@ -5,6 +5,14 @@
 #include <HardwareSerial.h>
 #include "config.h"
 
+#define modbusHead1 0x01
+#define modbusHead2 0x03
+#define modbusSize  0x04
+
+#define modbusPosNum  0x00
+#define modbusNegNum  0xFF
+
+
 class ModbusRTU{
 private:
     // uint8_t SerialPinRx;
@@ -19,9 +27,11 @@ public:
     void spin();
 
     // 进制转化
-    uint8_t toBCD(int val);
+    uint8_t toHex(int val);
     // 指令发送
     void mb_Send_Cmd(uint8_t cmd[],uint8_t len);
+    // 速度反馈 
+    void mb_Speed_callBack();
 
     // 电机_常用功能
     void mb_Cls_Error();
