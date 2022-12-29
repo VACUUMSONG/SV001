@@ -14,7 +14,7 @@ void Car::init() {
     //每一个轮子初始化
     this->backLWheel.init();
     this->backRWheel.init();
-    Serial1.print(" Car init.\n");
+    // Serial1.print(" Car init.\n");
 }
 
 void Car::spin() {

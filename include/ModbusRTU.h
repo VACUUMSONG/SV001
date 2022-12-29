@@ -5,14 +5,6 @@
 #include <HardwareSerial.h>
 #include "config.h"
 
-#define modbusHead1 0x01
-#define modbusHead2 0x03
-#define modbusSize  0x04
-
-#define modbusPosNum  0x00
-#define modbusNegNum  0xFF
-
-
 class ModbusRTU{
 private:
     // uint8_t SerialPinRx;

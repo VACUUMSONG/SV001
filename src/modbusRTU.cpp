@@ -1,5 +1,4 @@
 #include "modbusRTU.h"
-#include "hex2dec.h"
 #include <string.h>
 
 // 中菱 电机驱动 Modbus协议
@@ -69,16 +68,10 @@ ModbusRTU::~ModbusRTU(){
 
 void ModbusRTU::init()
 {
-	HardwareSerial Serial_Modbus(PIN_U5_RX, PIN_U5_TX);
-	HardwareSerial Serial_BM1684(PIN_U1_RX, PIN_U1_TX);
-
 	//串口初始化
+	HardwareSerial Serial_Modbus(PIN_U5_RX, PIN_U5_TX);
 	Serial_Modbus.begin(115200);
 	Serial_Modbus.println("UART Modbus Init...");
-	delay(200);
-	Serial_BM1684.begin(115200);
-	Serial_BM1684.println("UART BM1684 Init...");
-	delay(200);
 }
 
 // 不断执行
@@ -92,7 +85,7 @@ uint8_t ModbusRTU::toHex(int val) {
 
 	char resHex =  (char) (val%16 & 0x0F) | (val/16 << 4);  
 	// Serial_BM1684.println(resHex,HEX);
-	delay(200);
+	// delay(200);
 	
 	return resHex;
 }
@@ -180,13 +173,6 @@ void ModbusRTU::mb_Set_Motor_Speed() {
 
 // 转速设定 -> 左电机
 void ModbusRTU::mb_Set_Left_Moto(int rpm) {
-	
-	//串口初始化
-	HardwareSerial Serial_Modbus(PIN_U5_RX, PIN_U5_TX);
-	Serial_Modbus.begin(115200);
-	HardwareSerial Serial_BM1684(PIN_U1_RX, PIN_U1_TX);
-	Serial_BM1684.begin(115200);
-
 	// rpm 限幅
     if (rpm > MAX_RPM) {
         rpm = MAX_RPM;
@@ -254,8 +240,8 @@ void ModbusRTU::mb_Set_Right_Moto(int rpm) {
 int16_t ModbusRTU::mb_Get_LeftMotor_RPA() {
 
 	HardwareSerial Serial_Modbus(PIN_U5_RX, PIN_U5_TX);
-	HardwareSerial Serial_BM1684(PIN_U1_RX, PIN_U1_TX);
-	Serial_BM1684.begin(115200);
+	// HardwareSerial Serial_BM1684(PIN_U1_RX, PIN_U1_TX);
+	// Serial_BM1684.begin(115200);
 	Serial_Modbus.begin(115200);
 
 	// 获取电机速度
@@ -282,32 +268,31 @@ int16_t ModbusRTU::mb_Get_LeftMotor_RPA() {
 
 	int resData= int(lm_rpm_flag)*256 +int(lm_rpm_num);
 	
-	Serial_BM1684.print("-----LM-------");	
-	delay(200);
-	if(resData<2560){
-		Serial_BM1684.print(resData);	
-	}else{
-		Serial_BM1684.print(resData-65535);	
-	}
-	delay(200);
-	Serial_BM1684.print("-------------");	
-	delay(200);
+	// Serial_BM1684.print("-----LM-------");	
+	// delay(200);
+	// if(resData<2560){
+	// 	Serial_BM1684.print(resData);	
+	// }else{
+	// 	Serial_BM1684.print(resData-65535);	
+	// }
+	// delay(200);
+	// Serial_BM1684.print("-------------");	
+	// delay(200);
 
 	data = "";
 
-	if(resData < 2560){
+	if(resData < (2560)){
 		return resData;
 	}else {
-		return (resData -65536);
+		return (resData - 65535);
 	}
 }
-
 
 int16_t ModbusRTU::mb_Get_RightMotor_RPA() {
 
 	HardwareSerial Serial_Modbus(PIN_U5_RX, PIN_U5_TX);
-	HardwareSerial Serial_BM1684(PIN_U1_RX, PIN_U1_TX);
-	Serial_BM1684.begin(115200);
+	// HardwareSerial Serial_BM1684(PIN_U1_RX, PIN_U1_TX);
+	// Serial_BM1684.begin(115200);
 	Serial_Modbus.begin(115200);
 
 	// 获取电机速度
@@ -334,21 +319,22 @@ int16_t ModbusRTU::mb_Get_RightMotor_RPA() {
 
 	int resData= int(rm_rpm_flag)*256 +int(rm_rpm_num);
 	
-	Serial_BM1684.print("-----RM-------");	
-	delay(200);
-	if(resData<2560){
-		Serial_BM1684.print(resData);	
-	}else{
-		Serial_BM1684.print(resData-65535);	
-	}
-	delay(200);
-	Serial_BM1684.print("-------------");	
-	delay(200);
+	// Serial_BM1684.print("-----RM-------");	
+	// delay(200);
+	// if(resData<2560){
+	// 	Serial_BM1684.print(resData);	
+	// }else{
+	// 	Serial_BM1684.print(resData-65535);	
+	// }
+	// delay(200);
+	// Serial_BM1684.print("-------------");	
+	// delay(200);
+
 	data = "";
 
 	if(resData < 2560){
 		return resData;
 	}else{
-		return (resData -65536);
+		return (resData -65535);
 	}
 }

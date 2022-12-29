@@ -2,15 +2,17 @@
 #include "mylog.h"
 
 //获取左电机速度
-void Read_Left_Moto(){
+int16_t Read_Left_Moto(){
     ModbusRTU MotorEncoder;
     motor_left_counter =  MotorEncoder.mb_Get_LeftMotor_RPA();
+    return motor_left_counter;
 }
 
 //获取右电机速度
-void Read_Right_Moto(){
+int16_t Read_Right_Moto(){
     ModbusRTU MotorEncoder;
     motor_right_counter = MotorEncoder.mb_Get_RightMotor_RPA();
+    return motor_right_counter;
 }
 
 Encoder::Encoder(int direction, MotorPosition left_or_right) {
@@ -18,11 +20,7 @@ Encoder::Encoder(int direction, MotorPosition left_or_right) {
     this->motor_position = left_or_right;
     
     if(motor_position == LeftMotor){
-        // this->motorCountPin1  = MOTORL_COUNTPIN1;
-        // this->motorCountPin2 = MOTORL_COUNTPIN2;
     }else{
-        // this->motorCountPin1  = MOTORR_COUNTPIN1;
-        // this->motorCountPin2 = MOTORR_COUNTPIN2;
     }
 }
 
@@ -32,6 +30,12 @@ Encoder::~Encoder() {
 
 void Encoder::init() {
     //编码器开启定时器
+    if(this->motor_position ==LeftMotor){
+        Read_Left_Moto();
+    }else if(this ->motor_position ==RightMotor){
+        Read_Right_Moto();
+    }
+
 }
 
 short Encoder::read() {
@@ -39,12 +43,12 @@ short Encoder::read() {
     short count = 0;
 
     if (this->motor_position == LeftMotor){
-        count = (short)motor_left_counter;
+        count = (short)Read_Left_Moto();
         // mylog("[left] counter:%d \n", (int) (count));
         //重置计数
         motor_left_counter =  0;
     }else if(this->motor_position == RightMotor){
-        count = (short)motor_right_counter;
+        count = (short)Read_Right_Moto();
         // mylog("[right] counter:%d \n", (int) (count));
         //重置计数
         motor_right_counter = 0;
