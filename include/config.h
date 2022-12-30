@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 
+#define LED_PIN PA1
+
 // 串口 BM1684
 #define PIN_U1_RX      PA10
 #define PIN_U1_TX      PA9
