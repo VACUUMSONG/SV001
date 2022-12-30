@@ -30,7 +30,16 @@ public:
     void mb_Set_Motor_Enable();
     void mb_Set_Motor_Stop();
     void mb_Set_Motor_EmerganceyStop();
-    
+
+    // 前进
+    void mb_Set_Motor_Forward();
+    // 后退
+    void mb_Set_Motor_Backward();
+    // 左转
+    void mb_Set_Motor_Left();
+    // 右转
+    void mb_Set_Motor_Right();
+
     // 电机_速度设定
     void mb_Set_Motor_Speed();
     void mb_Set_Left_Moto(int rpm);

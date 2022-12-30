@@ -4,7 +4,6 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 
-
 // 串口 BM1684
 #define PIN_U1_RX      PA10
 #define PIN_U1_TX      PA9
@@ -12,10 +11,9 @@
 #define PIN_U5_RX      PD2
 #define PIN_U5_TX      PC12
 
+//最小超声避障距离 默认 30CM
+#define MIN_DIST_AVOID_OBSTACLE  30
 
-//最大和最小PWM
-// #define MAX_PWM         250
-// #define MIN_PWM         -250
 //最大和最小RPM
 #define MAX_RPM         250
 #define MIN_RPM         -250

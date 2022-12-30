@@ -9,12 +9,24 @@ Motor::~Motor() {
 }
 
 void Motor::init() {
+    ModbusRTU modbusRTU;
+    // 电机静止
+    modbusRTU.mb_Set_Motor_Stop();
+    // 速度模式
+    modbusRTU.mb_Set_Motor_Speed();
+    // 电机使能
+    modbusRTU.mb_Set_Motor_Enable();
+
 }
 
 void Motor::forward(){
+    ModbusRTU modbusRTU;
+    modbusRTU.mb_Set_Motor_Forward();
 }
 
 void Motor::backward(){
+    ModbusRTU modbusRTU;
+    modbusRTU.mb_Set_Motor_Backward();
 }
 
 void Motor::stop(){
@@ -48,5 +60,6 @@ void Motor::spin(int pwm) {
     
     //速度pwm
     ModbusRTU modbusRTU;
-    // modbusRTU.mb_Set_Motor_Speed(this->MotorPWM,abs(pwm));
+    modbusRTU.mb_Set_Left_Moto(pwm);
+    modbusRTU.mb_Set_Right_Moto(pwm);
 }

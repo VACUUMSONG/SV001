@@ -33,15 +33,12 @@ public:
     void updateSpeed(float vel,float anguler);
 
     void updatePid(float kp, float ki, float kd);
-
     
     float getLVel(); // 获取左轮速度
     float getRVel(); // 获取右轮速度
-    //获取线速度
-    float getVel();
 
-    //获取角速度
-    float getAnguler();
+    float getVel();     //获取线速度
+    float getAnguler(); //获取角速度
 
     //获取位姿
     float getPose_x();
